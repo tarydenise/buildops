@@ -10,6 +10,7 @@ import session from 'express-session';
 import './auth/google';
 import { formatGraphQLError } from './utils/errorFormatter';
 import jwt from 'jsonwebtoken';
+import { IUser } from './models/User';
 
 dotenv.config();
 const app = express();
@@ -23,7 +24,19 @@ app.use(
 const server = new ApolloServer({
     typeDefs,
     resolvers,
-    formatError: formatGraphQLError,
+    context: ({ req }) => {
+        const authHeader = req.headers.authorization;
+        if (authHeader) {
+            const token = authHeader.split(' ')[1];
+            try {
+                const user = jwt.verify(token, process.env.JWT_SECRET!);
+                return { user };
+            } catch {
+                return{};
+            }
+        }
+        return {};
+    },
 });
 
 const startServer = async () => {
@@ -37,7 +50,15 @@ const startServer = async () => {
         '/auth/google/callback',
         passport.authenticate('google', { failureRedirect: '/' }),
         (req, res) => {
-            res.send('Logged in with Google!');
+            const user = req.user as IUser;
+
+            const token = jwt.sign(
+                { id: user._id, name: user.name, email: user.email },
+                process.env.JWT_SECRET!,
+                { expiresIn: '1h' }
+            );
+
+            res.send(`Logged in! Your token: ${token}`);
         }
     );
 

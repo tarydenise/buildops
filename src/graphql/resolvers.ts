@@ -5,6 +5,7 @@ import Crew from '../models/Crew';
 import { validateCrewInput } from './validators';
 import { validate } from 'graphql';
 import { validateJobSiteInput } from './validators';
+import UserModel from '../models/User';
 
 export const resolvers = {
     Query: {
@@ -14,10 +15,31 @@ export const resolvers = {
         getJobSites: async (_: unknown) => {
             return await JobSiteModel.find();
         },
+        me: async (_: unknown, __: unknown, context: any) => {
+            if (!context.user) {
+                throw new Error('Unauthorized: No user found in context.');
+            }
+
+            const user = await UserModel.findById(context.user.id);
+            if (!user) {
+                throw new Error('User not found.');
+            }
+
+            return {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                avatar: user.avatar,
+            };
+        },
     },
 
     Mutation: {
-        createCrew: async (_: unknown, args: any) => {
+        createCrew: async (_: unknown, args: any, context: any) => {
+            if (!context.user) {
+                throw new Error('Unauthorized: You must be logged in to create a crew.');
+            }
+
             const errors = validateCrewInput(args);
             if (errors.length > 0) {
                 throw new Error(errors.join(' | '));
@@ -27,7 +49,11 @@ export const resolvers = {
             return await crew.save();
         },
 
-        updateCrew: async (_: unknown, { id, ...updates }: any) => {
+        updateCrew: async (_: unknown, { id, ...updates }: any, context: any) => {
+            if (!context.user) {
+                throw new Error('Unauthorized: You must be logged in to update a crew.');
+            }
+
             const errors = validateCrewInput(id);
             if (errors.length > 0) {
                 throw new Error(errors.join(' | '));
@@ -36,7 +62,11 @@ export const resolvers = {
             return await CrewModel.findByIdAndUpdate(id, updates, { new: true });
         },
 
-        deleteCrew: async (_: unknown, { id }: any) => {
+        deleteCrew: async (_: unknown, { id }: any, context: any) => {
+            if (!context.user) {
+                throw new Error('Unauthorized: You must be logged in to delete a crew.');
+            }
+
             return await CrewModel.findOneAndDelete(id);
         },
 

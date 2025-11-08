@@ -26,6 +26,14 @@ export const typeDefs = gql`
     type Query {
         getCrews: [Crew!]!
         getJobSites: [JobSite!]!
+        me: User
+    }
+
+    type User {
+        id: ID!
+        name: String!
+        email: String!
+        avatar: String
     }
 
     type Mutation {
