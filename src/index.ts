@@ -8,6 +8,7 @@ import { connectDB } from './db';
 import passport from 'passport';
 import session from 'express-session';
 import './auth/google';
+import { formatGraphQLError } from './utils/errorFormatter';
 
 dotenv.config();
 const app = express();
@@ -21,11 +22,7 @@ app.use(
 const server = new ApolloServer({
     typeDefs,
     resolvers,
-    formatError: (err) => ({
-        message: err.message,
-        path: err.path,
-        code: err.extensions.code || 'INTERNAL_SERVER_ERROR',
-    }),
+    formatError: formatGraphQLError,
 });
 
 const startServer = async () => {
