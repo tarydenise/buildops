@@ -2,6 +2,8 @@ import { Query } from 'mongoose';
 import CrewModel from '../models/Crew';
 import JobSiteModel from '../models/JobSite';
 import Crew from '../models/Crew';
+import { validateCrewInput } from './validators';
+import { validate } from 'graphql';
 
 export const resolvers = {
     Query: {
@@ -15,11 +17,21 @@ export const resolvers = {
 
     Mutation: {
         createCrew: async (_: unknown, args: any) => {
+            const errors = validateCrewInput(args);
+            if (errors.length > 0) {
+                throw new Error(errors.join(' | '));
+            }
+
             const crew = new CrewModel(args);
             return await crew.save();
         },
 
         updateCrew: async (_: unknown, { id, ...updates }: any) => {
+            const errors = validateCrewInput(id);
+            if (errors.length > 0) {
+                throw new Error(errors.join(' | '));
+            }
+
             return await CrewModel.findByIdAndUpdate(id, updates, { new: true });
         },
 
