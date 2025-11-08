@@ -1,7 +1,8 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import dotenv from 'dotenv';
-import { profile } from 'console';
+import type { Profile } from 'passport';
+import UserModel from '../models/User';
 
 dotenv.config();
 
@@ -15,16 +16,23 @@ passport.use(
         async (
             accessToken: string,
             refreshToken: string,
-            profile: any,
-            done: (error: any, user?: any) => void
+            profile: Profile,
+            done: (error: any, user?: Express.User | false | null) => void
         ) => {
             try {
-                const user = {
+                const existingUser = await UserModel.findOne({ googleId: profile.id });
+
+                if (existingUser) return done(null, existingUser);
+
+                const newUser = new UserModel({
                     googleId: profile.id,
                     name: profile.displayName,
                     email: profile.emails?.[0].value,
-                };
-                return done(null, user);
+                    avatar: profile.photos?.[0].value,
+                });
+
+                await newUser.save();
+                return done(null, newUser);
             } catch (err) {
                 return done(err, null);
             }

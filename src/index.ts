@@ -9,6 +9,7 @@ import passport from 'passport';
 import session from 'express-session';
 import './auth/google';
 import { formatGraphQLError } from './utils/errorFormatter';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 const app = express();
