@@ -4,11 +4,19 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { typeDefs } from './graphql/typeDefs';
 import { resolvers } from './graphql/resolvers';
-import { connecDB } from './db';
+import { connectDB } from './db';
+import passport from 'passport';
+import session from 'express-session';
+import './auth/google';
 
 dotenv.config();
 const app = express();
-app.use(cors());
+app.use(
+    cors(),
+    session({ secret: process.env.JWT_SECRET!, resave: false, saveUninitialized: false }),
+    passport.initialize(),
+    passport.session()
+);
 
 const server = new ApolloServer({
     typeDefs,
@@ -21,9 +29,19 @@ const server = new ApolloServer({
 });
 
 const startServer = async () => {
-    await connecDB();
+    await connectDB();
     await server.start();
     server.applyMiddleware({ app: app as any });
+
+    app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+    app.get(
+        '/auth/google/callback',
+        passport.authenticate('google', { failureRedirect: '/' }),
+        (req, res) => {
+            res.send('Logged in with Google!');
+        }
+    );
 
     app.listen({ port: 4000 }, () => {
         console.log(`Server ready at http://localhost:4000${server.graphqlPath}`);
