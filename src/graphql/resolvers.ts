@@ -4,6 +4,7 @@ import JobSiteModel from '../models/JobSite';
 import Crew from '../models/Crew';
 import { validateCrewInput } from './validators';
 import { validate } from 'graphql';
+import { validateJobSiteInput } from './validators';
 
 export const resolvers = {
     Query: {
@@ -40,11 +41,21 @@ export const resolvers = {
         },
 
         createJobSite: async (_: unknown, args: any) => {
-            const JobSite = new JobSiteModel(args);
-            return await JobSite.save();
+            const errors = validateJobSiteInput(args);
+            if (errors.length > 0) {
+                throw new Error(errors.join(' | '));
+            }
+
+            const jobSite = new JobSiteModel(args);
+            return await jobSite.save();
         },
 
         updateJobSite: async (_: unknown, { id, ...updates }: any) => {
+            const errors = validateJobSiteInput(id);
+            if (errors.length > 0) {
+                throw new Error(errors.join(' | '));
+            }
+            
             return await JobSiteModel.findByIdAndUpdate(id, updates, { new: true });
         },
 

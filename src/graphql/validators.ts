@@ -24,3 +24,30 @@ export const validateCrewInput = (input: {
 
     return errors;
 };
+
+export const validateJobSiteInput = (input: {
+    location?: string;
+    client?: string;
+    budget?: number;
+    deadline?: string;
+}) => {
+    const errors: string[] = [];
+
+    if (!input.location || input.location.trim().length < 3) {
+        errors.push('Location must be at least 3 characters.');
+    }
+
+    if (!input.client || input.client.trim().length < 2) {
+        errors.push('Client name must be at least 2 characters.');0
+    }
+
+    if (typeof input.budget !== 'number' || input.budget <= 0) {
+        errors.push('Budget must be a positive number.');
+    }
+
+    if (input.deadline && isNaN(Date.parse(input.deadline))) {
+        errors.push('Deadline must be a valid date string.');
+    }
+
+    return errors;
+};
