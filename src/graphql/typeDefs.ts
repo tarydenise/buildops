@@ -12,14 +12,40 @@ export const typeDefs = gql`
         notes: String
     }
 
+    input CrewInput {
+        id: ID
+        name: String!
+        foreman: String!
+        members: [String!]!
+        specialty: String!
+        startDate: String!
+        active: Boolean!
+        notes: String
+    }
+
     type JobSite {
         id: ID!
+        name: String!
         location: String!
+        startDate: String!
+        endDate: String!
+        crewAssigned: ID
+        status: String
         client: String!
         budget: Float!
-        deadline: String
-        status: String
-        crewAssigned: ID
+        notes: String
+    }
+
+    input JobSiteInput {
+        id: ID
+        name: String!
+        location: String!
+        startDate: String!
+        endDate: String
+        crewAssigned: String!
+        status: String!
+        client: String!
+        budget: Float!
         notes: String
     }
 
@@ -37,49 +63,23 @@ export const typeDefs = gql`
     }
 
     type Mutation {
-        createCrew(
-            name: String!
-            foreman: String!
-            members: [String!]!
-            specialty: String
-            startDate: String
-            active: Boolean!
-            notes: String 
-        ): Crew!
-
-        updateCrew(
-           name: String!
-            foreman: String!
-            members: [String!]!
-            specialty: String
-            startDate: String
-            active: Boolean!
-            notes: String 
-        ): Crew!
-
+        createCrew(input: CrewInput!): Crew!
+        updateCrew(input: UpdateCrewInput!): Crew!
         deleteCrew(id: ID!): Crew!
 
-        createJobSite(
-            location: String!
-            client: String!
-            budget: Float!
-            deadline: String
-            status: String
-            crewAssigned: ID
-            notes: String
-        ): JobSite!
-
-        updateJobSite(
-            id: ID!
-            location: String!
-            client: String!
-            budget: Float!
-            deadline: String
-            status: String
-            crewAssigned: ID
-            notes: String
-        ): JobSite!
-
+        createJobSite(input: JobSiteInput!): JobSite!
+        updateJobSite(id: ID!, input: JobSiteInput!): JobSite!
         deleteJobSite(id: ID!): JobSite!
+    }
+
+    input UpdateCrewInput {
+        id: ID!
+        name: String!
+        foreman: String!
+        members: [String!]!
+        specialty: String!
+        startDate: String!
+        active: Boolean!
+        notes: String
     }
 `;
