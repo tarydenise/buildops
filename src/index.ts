@@ -1,7 +1,9 @@
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
+import { ExpressContext } from 'apollo-server-express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { Request, Response } from 'express';
 import { typeDefs } from './graphql/typeDefs';
 import { resolvers } from './graphql/resolvers';
 import { connectDB } from './db';
@@ -24,7 +26,7 @@ app.use(
 const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context: ({ req }) => {
+    context: ({ req }: { req: Request }) => {
         const authHeader = req.headers.authorization;
         if (authHeader) {
             const token = authHeader.split(' ')[1];
@@ -49,7 +51,7 @@ const startServer = async () => {
     app.get(
         '/auth/google/callback',
         passport.authenticate('google', { failureRedirect: '/' }),
-        (req, res) => {
+        (req: Request, res: Response) => {
             const user = req.user as IUser;
 
             const token = jwt.sign(
